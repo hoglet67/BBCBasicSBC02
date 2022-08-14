@@ -1,5 +1,3 @@
-org $fe00
-
 ;; *************************************************************
 ;; Configuration
 ;; *************************************************************
@@ -166,19 +164,19 @@ UART        = $A000
    INY                  ; increment buffer index
 
 .cloop1
-   JSR oswrch           ; echo the character
+   JSR OSWRCH           ; echo the character
 
 .cloop2
-   JSR osrdch           ; read character from input stream
+   JSR OSRDCH           ; read character from input stream
    BCS exit_err         ; if carry set then illegal character or other error and exit
    CMP #&08             ; if character is not delete
    BNE not_del          ; process it
    CPY #&00             ; else is Y=0
    BEQ cloop2           ; and goto cloop2
    DEY                  ; decrement Y
-   JSR oswrch           ; cursor left
+   JSR OSWRCH           ; cursor left
    LDA #$20             ; space
-   JSR oswrch
+   JSR OSWRCH
    LDA #$08             ; cursor left
    BNE cloop1           ; jump always
 
@@ -196,7 +194,7 @@ UART        = $A000
    BCS y0               ; then y0
 
 .exit_ok
-   JSR osnewl           ; output CR/LF
+   JSR OSNEWL           ; output CR/LF
 
 .exit_err
    LDA ZP_ESCFLAG       ; A=ESCAPE FLAG
@@ -401,11 +399,11 @@ ENDIF
 .prloop
    LDA reset_msg, X
    BEQ done
-   JSR osasci
+   JSR OSASCI
    INX
 .done
    ;; Enter Basic
-   JMP $C000
+   JMP ENTER_BASIC
 }
 
 ;; *************************************************************
@@ -415,34 +413,34 @@ ENDIF
 ;; Note, to save space nothing is vectored
 
    ORG $ffce
-.osfind
+.OSFIND
    JMP nvosfind
-.osgbpb
+.OSGBPB
    JMP nvosgbpb
-.osbput
+.OSBPUT
    JMP nvosbput
-.osbget
+.OSBGET
    JMP nvosbget
-.osargs
+.OSARGS
    JMP nvosargs
-.osfile
+.OSFILE
    JMP nvosfile
-.osrdch
+.OSRDCH
    JMP nvosrdch
-.osasci
+.OSASCI
    CMP #$0D
-   BNE oswrch
-.osnewl
+   BNE OSWRCH
+.OSNEWL
    LDA #$0A
-   JSR oswrch
+   JSR OSWRCH
    LDA #$0D
-.oswrch
+.OSWRCH
    JMP nvoswrch
-.osword
+.OSWORD
    JMP nvosword
-.osbyte
+.OSBYTE
    JMP nvosbyte
-.oscli
+.OSCLI
    JMP nvoscli
 
 ;; *************************************************************

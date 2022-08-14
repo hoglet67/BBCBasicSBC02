@@ -12,4 +12,7 @@ fi
 
 echo -e "version:\n    ${VERSION}"
 
-beebasm -S GITVERSION=$GITVERSION -i src/SBC_MOS.asm -v  -o build/SBC_MOS |& tee build/SBC_MOS.lst
+cd src
+beebasm -i test.asm -v  -o ../build/test |& tee ../build/test.lst
+beebasm -S GITVERSION=$GITVERSION -i combined.asm -v  -o ../build/SBC02 |& tee ../build/SBC02.lst
+cd ..
