@@ -1,5 +1,7 @@
 org $be00
 
+include_AUTO=FALSE
+
 .rom_start
 
 .ENTER_BASIC
