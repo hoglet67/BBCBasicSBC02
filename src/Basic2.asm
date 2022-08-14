@@ -68,7 +68,7 @@ tknHIMEM=&93
 
 \ BBC Code Header
 \ ===============
-IF (incBeebLangHeader)
+IF include_LANG_HEADER
 CMP #&01:BEQ L8023:RTS        \ LANGUAGE ENTRY
 NOP
 EQUB &60                      \ ROM type=Lang+Tube+6502 BASIC

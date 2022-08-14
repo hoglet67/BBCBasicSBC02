@@ -1,16 +1,17 @@
-org $be00
+org $c000
 
-include_AUTO=FALSE
-include_LOADSAVECHAIN=FALSE
-include_OSCLI=FALSE
-include_RANDOMACCESS=FALSE
+include_LANG_HEADER=FALSE        \ 35 bytes
+include_AUTO=TRUE                \ 54 bytes
+include_LOADSAVECHAIN=TRUE       \ 103 bytes
+include_OSCLI=TRUE               \ 34 bytes
+                                 \ 14 byte shared
+include_RANDOMACCESS=FALSE       \ 443 bytes
 
 .rom_start
 
 .ENTER_BASIC
 
-incBeebLangHeader=0
-WRCHV=0      \ User JMP $FFEE
+WRCHV=0                          \ Use JMP $FFEE directly
 
 include "Basic2.asm"
 include "SBC_MOS.asm"
