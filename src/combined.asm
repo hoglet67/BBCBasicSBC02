@@ -1,6 +1,7 @@
 org $be00
 
 include_AUTO=FALSE
+include_LOADSAVECHAIN=FALSE
 
 .rom_start
 
