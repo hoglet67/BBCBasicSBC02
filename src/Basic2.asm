@@ -223,7 +223,9 @@ EQUS "OR"      :EQUB &84:EQUB &00 \ 00000000
 EQUS "OPENIN"  :EQUB &8E:EQUB &00 \ 00000000
 EQUS "OPENOUT" :EQUB &AE:EQUB &00 \ 00000000
 EQUS "OPENUP"  :EQUB &AD:EQUB &00 \ 00000000
+if include_OSCLI
 EQUS "OSCLI"   :EQUB &FF:EQUB &02 \ 00000010
+ENDIF
 EQUS "PRINT"   :EQUB &F1:EQUB &02 \ 00000010
 EQUS "PAGE"    :EQUB &90:EQUB &43 \ 01000011
 EQUS "PTR"     :EQUB &8F:EQUB &43 \ 01000011
@@ -428,7 +430,11 @@ EQUB L938E AND &FF \ &FB - COLOUR
 EQUB L9295 AND &FF \ &FC - TRACE
 EQUB LBBB1 AND &FF \ &FD - UNTIL
 EQUB LB4A0 AND &FF \ &FE - WIDTH
+if include_OSCLI
 EQUB LBEC2 AND &FF \ &FF - OSCLI
+ELSE
+EQUB L982A AND &FF \ &FF - unused
+ENDIF
 
 \ FUNCTION/COMMAND DISPATCH TABLE, ADDRESS HIGH BYTES
 \ ===================================================
@@ -598,7 +604,11 @@ EQUB L938E DIV 256 \ &FB - COLOUR
 EQUB L9295 DIV 256 \ &FC - TRACE
 EQUB LBBB1 DIV 256 \ &FD - UNTIL
 EQUB LB4A0 DIV 256 \ &FE - WIDTH
+IF include_OSCLI
 EQUB LBEC2 DIV 256 \ &FF - OSCLI
+ELSE
+EQUB L982A DIV 256 \ &FF - unused
+ENDIF
 
 \ ASSEMBLER
 \ =========
@@ -1694,16 +1704,21 @@ ENDIF
 .L8B60
 LDY &0A:DEY:LDA (&0B),Y   \ Step program pointer back and fetch char
 CMP #'=':BEQ L8B47     \ Jump for '=', return from FN
+IF include_OSCLI
 CMP #'*':BEQ L8B73     \ Jump for '*', embedded *command
+ENDIF
+
 CMP #'[':BEQ L8B44     \ Jump for '[', start assembler
 BNE L8B96                 \ Otherwise, see if end of statement
 
+IF include_OSCLI
 \ Embedded *command
 \ =================
 .L8B73
  JSR L986D                 \ Update PtrA to current address
  LDX &0B:LDY &0C           \ Pass command at ptrA to OSCLI
  JSR OSCLI
+ENDIF
 
 \ DATA, DEF, REM, ELSE
 \ ====================
@@ -9111,18 +9126,22 @@ RTS
 
 \ OSCLI string$ - Pass string to OSCLI to execute
 \ ===============================================
+IF include_OSCLI
 .LBEC2
 JSR LBED2
 LDX #&00:LDY #(ws+&0600)DIV256
 JSR OSCLI
 JMP L8B9B
+ENDIF
 
+if (include_OSCLI OR include_LOADSAVECHAIN)
 .LBECF
 JMP L8C0E
 
 .LBED2
 JSR L9B1D:BNE LBECF
 JSR LBEB2:JMP L984C
+ENDIF
 
 IF include_LOADSAVECHAIN
 .LBEDD
