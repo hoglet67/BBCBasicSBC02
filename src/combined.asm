@@ -3,6 +3,7 @@ org $be00
 include_AUTO=FALSE
 include_LOADSAVECHAIN=FALSE
 include_OSCLI=FALSE
+include_RANDOMACCESS=FALSE
 
 .rom_start
 
