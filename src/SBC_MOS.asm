@@ -2,7 +2,13 @@
 ;; Configuration
 ;; *************************************************************
 
+;; Set to 0 for no flow control
+;; Set to 1 to enable XON/XOFF handshakine in the recive direction
 USE_XON_XOFF = 1
+
+;; Set to 0 to fake the 100Hz timer (it just increments with each read)
+;; Set to 1 to have NMI increment a 100Hz timer
+USE_NMI_TIMER = 1
 
 ;; *************************************************************
 ;; Memory
@@ -39,6 +45,22 @@ TX_BUFFER   = $7F00
 
 ;; 6850 UART is at $a000
 UART        = $A000
+
+;; *************************************************************
+;; Macros
+;; *************************************************************
+
+macro DO_INCREMENT_TIME
+   ;; Increment the clock each time it's read, as we have no other timer!
+   INC ZP_TIME
+   BNE done
+   INC ZP_TIME+1
+   BNE done
+   INC ZP_TIME+2
+   BNE done
+   INC ZP_TIME+3
+.done
+endmacro
 
 ;; *************************************************************
 ;; OS API Implementation
@@ -110,15 +132,9 @@ UART        = $A000
    STA (pblock), Y
    DEY
    BPL loop
-   ;; Increment the clock each time it's read, as we have no other timer!
-   INC ZP_TIME
-   BNE done
-   INC ZP_TIME+1
-   BNE done
-   INC ZP_TIME+2
-   BNE done
-   INC ZP_TIME+3
-.done
+IF USE_NMI_TIMER <> 1
+   DO_INCREMENT_TIME
+ENDIF
    LDA #$01             ; preserve A
    LDY pblock+1         ; preserve Y
    RTS
@@ -280,6 +296,9 @@ UART        = $A000
 
 .nmi_handler
 {
+IF USE_NMI_TIMER = 1
+   DO_INCREMENT_TIME
+ENDIF
    RTI
 }
 
