@@ -373,19 +373,34 @@ ENDIF
    LDX #$FF
    TXS
 
-   ;; Initialize Zero Page
-   LDX #ZP_END - ZP_START + 1
-   LDA #$00
-.clrloop
-   STA ZP_START,X
-   DEX
-   BPL clrloop
-
-   ;; Initialize the SWI Handler
+   ;; Initialize the BRK Handler
    LDA #<default_brk_handler
    STA BRKV
+IF (>default_brk_handler = $FF)
+   STX BRKV + 1
+ELSE
    LDA #>default_brk_handler
-   STA BRKV+1
+   STA BRKV + 1
+ENDIF
+
+   ;; Initialize Zero Page
+   INX
+   LDY #ZP_END - ZP_START + 1
+.clrloop
+   STX ZP_START - 1, Y
+   DEY
+   BNE clrloop
+
+   ;; Initialize the Error Pointer
+   LDA #<reset_msg
+   STA ZP_ERRPTR
+IF (>reset_msg = $FF)
+   DEX
+   STX ZP_ERRPTR + 1
+ELSE
+   LDA #>reset_msg
+   STA ZP_ERRPTR + 1
+ENDIF
 
    ;; Initialize the UART
    ;; RX INT ENABLED, RTS LOW, TX INT DISABLED, 8N1, CLK/16
@@ -396,12 +411,11 @@ ENDIF
    CLI
 
    ;; Print the reset message
-   LDX #0
 .prloop
-   LDA reset_msg, X
+   LDA reset_msg, Y
    BEQ done
    JSR OSASCI
-   INX
+   INY
    BNE prloop
 .done
    ;; Enter Basic
