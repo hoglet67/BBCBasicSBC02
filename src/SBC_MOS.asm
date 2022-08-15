@@ -214,7 +214,9 @@ UART        = $A000
    PHA
    CMP #$7C
    BNE not7c
+.clrescape
    LDA #$00
+.setescape
    STA ZP_ESCFLAG
    PLA
    RTS
@@ -222,19 +224,15 @@ UART        = $A000
    CMP #$7D
    BNE not7d
    LDA #$80
-   STA ZP_ESCFLAG
-   PLA
-   RTS
+   BNE setescape
 .not7d
    CMP #$7E
    BNE not7e
    LDX #$00
-   STX ZP_ESCFLAG
    STX ZP_RX_HEAD
    STX ZP_RX_TAIL
    DEX
-   PLA
-   RTS
+   BNE clrescape
 .not7e
    CMP #$83
    BNE not83
