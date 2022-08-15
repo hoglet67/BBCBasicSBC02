@@ -7,10 +7,10 @@ GITVERSION="$(git rev-parse --short HEAD)"
 
 # Check if any uncommitted changes in tracked files
 if [ -n "$(git status --untracked-files=no --porcelain)" ]; then
-  GITVERSION="${VERSION}?"
+  GITVERSION="${GITVERSION}?"
 fi
 
-echo -e "version:\n    ${VERSION}"
+echo -e "version:\n    ${GITVERSION}"
 
 cd src
 beebasm -i test.asm -v  -o ../build/test |& tee ../build/test.lst

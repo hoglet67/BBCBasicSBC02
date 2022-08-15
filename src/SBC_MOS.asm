@@ -152,7 +152,8 @@ UART        = $A000
    STA pcopy,Y
    DEY
    BPL ploop
-   BMI cloop2           ; branch always
+   INY
+   BPL cloop2           ; branch always, Y=0
 
 .bell
    LDA #&07             ; bell character
@@ -401,6 +402,7 @@ ENDIF
    BEQ done
    JSR OSASCI
    INX
+   BNE prloop
 .done
    ;; Enter Basic
    JMP ENTER_BASIC
