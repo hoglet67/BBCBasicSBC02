@@ -10,6 +10,12 @@ USE_XON_XOFF = 1
 ;; Set to 1 to have NMI increment a 100Hz timer
 USE_NMI_TIMER = 1
 
+;; Set to 0 to use NMI directly
+;;     (NMI should be 100Hz)
+;; Set to 1 to prescale NMI by a factor of 9
+;;     (NMI should be 900Hz = 1.8432MHz / 2048)
+USE_NMI_PRESCALER = 1
+
 ;; *************************************************************
 ;; Memory
 ;; *************************************************************
@@ -26,6 +32,7 @@ ZP_RX_TAIL  = $00f5
 ZP_TX_HEAD  = $00f6
 ZP_TX_TAIL  = $00f7
 ZP_XOFF     = $00f8
+ZP_PRESCALE = $00f9
 ZP_X        = $00fa
 ZP_Y        = $00fb
 ZP_ACC      = $00fc
@@ -311,6 +318,23 @@ ENDIF
 
 .nmi_handler
 {
+IF USE_NMI_PRESCALER = 1
+   ;;
+   ;; 11111111
+   ;; 01111111
+   ;; 00111111
+   ;; 00011111
+   ;; 00001111
+   ;; 00000111
+   ;; 00000011
+   ;; 00000001
+   ;; 00000000
+   LSR ZP_PRESCALE
+   BCC tick
+   RTI
+.tick
+   DEC ZP_PRESCALE    ;; 00 to FF
+ENDIF
 IF USE_NMI_TIMER = 1
    DO_INCREMENT_TIME
 ENDIF
