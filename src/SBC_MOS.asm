@@ -112,56 +112,71 @@ endmacro
 ;; OSWORD
 ;; *************************************************************
 
+;; On entry:
+;;   A = OSWORD number
+;;   Y = MSB of parameter block
+;;   X = LSB of parameter block
+;;
 .nvosword
 {
+   PHA
    STX pblock
    STY pblock+1
-   CMP #$01
-   BCC osword_readline
-   BEQ osword_readsysclk
-   CMP #$02
-   BEQ osword_writesysclk
-   RTS
-}
-
-.osword_readsysclk
-{
-   LDY  #$03
-.loop
-   LDA ZP_TIME,Y
-   STA (pblock), Y
+   TAY
+   BEQ osword_readline
    DEY
-   BPL loop
-IF USE_NMI_TIMER <> 1
-   DO_INCREMENT_TIME
-ENDIF
-   LDA #$01             ; preserve A
-   LDY pblock+1         ; preserve Y
-   RTS
-}
+   BEQ osword_readsysclk
+   DEY
+   BNE osword_exit
+
+;; OSWORD A=&02: Write System Clock
+;;
+;; Parameter block is the 4-byte system clock value
+;;
+;; On exit: A, X, Y preserved
 
 .osword_writesysclk
-{
    LDY #$03
-.loop
+.wloop
    LDA (pblock), Y
    STA ZP_TIME,Y
    DEY
-   BPL loop
-   LDA #$02           ; preserve A
-   LDY pblock+1       ; preserve Y
+   BPL wloop
+   BMI osword_exit
+
+;; OSWORD A=&01: Read System Clock
+;;
+;; Parameter block is the 4-byte system clock value
+;;
+;; On exit: A, X, Y preserved
+
+.osword_readsysclk
+   LDY  #$03
+.rloop
+   LDA ZP_TIME,Y
+   STA (pblock), Y
+   DEY
+   BPL rloop
+IF USE_NMI_TIMER <> 1
+   DO_INCREMENT_TIME
+ENDIF
+
+.osword_exit
+   LDY pblock+1         ; restore Y
+   PLA
    RTS
-}
 
-
-;; On Entry: X points to the parameter block
-;; 0: Buffer address
-;; 2: Max line length
-;; 3: Min ascii
-;; 4: Max ascii
+;; OSOWRD A=&00: Read Line
+;;
+;; Parameter block is:
+;;   0: Buffer address
+;;   2: Max line length
+;;   3: Min ascii
+;;   4: Max ascii
+;;
+;; On exit: A, X preserved; Y contains the line length; C is the escape flag
 
 .osword_readline
-{
    LDY #&04             ; Y=4
 .ploop
    LDA (pblock),Y       ; copy parameter block to zero page
@@ -216,7 +231,7 @@ ENDIF
 .exit_err
    LDA ZP_ESCFLAG       ; A=ESCAPE FLAG
    ROL A                ; put bit 7 into carry
-   LDA #&00             ; Preserve A
+   PLA                  ; Restore A
    RTS                  ; and exit routine
 }
 
